@@ -1,0 +1,11 @@
+# OS Metadata
+.DS_Store
+Thumbs.db
+
+# Ideal Development Editors
+.vscode/
+.idea/
+
+# Local Deployment Testing Backups
+*.log
+docker-compose.override.yml

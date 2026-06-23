@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CINÉ LUXE | Premium Cinema Booking</title>
+    <style>
+        /* Base Styling & Design System */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cinzel', 'Segoe UI', serif;
+        }
+        :root {
+            --gold: #dfb76c;
+            --gold-dark: #b89149;
+            --bg-black: #0a0a0a;
+            --card-black: #141414;
+            --text-light: #f5f5f5;
+            --text-muted: #8c8c8c;
+            --seat-available: #333333;
+            --seat-selected: #dfb76c;
+            --seat-occupied: #1a1a1a;
+        }
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+        
+        /* Premium Header Nav */
+        header {
+            border-bottom: 1px solid rgba(223, 183, 108, 0.2);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, #000, transparent);
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        /* View Switching Logic Hidden States */
+        .page-view {
+            display: none;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .page-view.active {
+            display: block;
+        }
+
+        /* PAGE 1: MOVIE CURATION SCREEN */
+        .language-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid #222;
+            padding-bottom: 1rem;
+        }
+        .lang-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: var(--text-muted);
+            padding: 0.6rem 2rem;
+            font-size: 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+        .lang-btn.active, .lang-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(223, 183, 108, 0.05);
+        }
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2.5rem;
+        }
+        .movie-card {
+            background: var(--card-black);
+            border: 1px solid #222;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        .movie-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--gold);
+            box-shadow: 0 10px 30px rgba(223, 183, 108, 0.1);
+        }
+        .movie-poster {
+            height: 400px;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+        }
+        .movie-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.3rem 0.8rem;
+            font-size: 0.75rem;
+            border-radius: 4px;
+        }
+        .movie-details {
+            padding: 1.5rem;
+        }
+        .movie-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+        .movie-meta {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .book-now-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #000;
+            border: none;
+            padding: 1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .book-now-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* PAGE 2: SEAT SELECTION SCREEN */
+        .booking-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3rem;
+        }
+        @media(min-width: 900px) {
+            .booking-layout { grid-template-columns: 2fr 1fr; }
+        }
+        .screen-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+        .cinema-screen {
+            width: 80%;
+            height: 8px;
+            background: #fff;
+            box-shadow: 0 4px 30px rgba(255,255,255,0.7);
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+        .screen-label {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        .seating-chart {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.8rem;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+        .seat {
+            aspect-ratio: 1;
+            background-color: var(--seat-available);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .seat.selected { background-color: var(--seat-selected); }
+        .seat.occupied {
+            background-color: var(--seat-occupied);
+            cursor: not-allowed;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+        .legend-color { width: 14px; height: 14px; border-radius: 3px; }
+
+        /* Checkout Sidebar Panel */
+        .summary-panel {
+            background: var(--card-black);
+            border: 1px solid rgba(223, 183, 108, 0.1);
+            padding: 2rem;
+            border-radius: 12px;
+            align-self: start;
+        }
+        .summary-panel h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid #222;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            color: var(--gold);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+        }
+        .summary-total {
+            border-top: 1px dashed #333;
+            padding-top: 1rem;
+            margin-top: 1.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--gold);
+        }
+        .back-btn {
+            background: transparent;
+            border: 1px solid var(--text-muted);
+            color: var(--text-light);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+        .back-btn:hover { border-color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- Premium Brand Navigation -->
+    <header>
+        <a href="#" class="logo" onclick="showCatalogPage()">CINÉ LUXE</a>
+        <div style="font-size:0.85rem; letter-spacing:2px; color:var(--gold);">LOUNGE EXPERIENCE</div>
+    </header>
+
+    <!-- PAGE 1: MOVIE SELECTION ARCHITECTURE -->
+    <main id="catalog-page" class="page-view active">
+        <div class="language-tabs">
+            <button class="lang-btn active" onclick="filterLanguage('ALL')">ALL LANGUAGES</button>
+            <button class="lang-btn" onclick="filterLanguage('ENGLISH')">ENGLISH</button>
+            <button class="lang-btn" onclick="filterLanguage('HINDI')">HINDI</button>
+            <button class="lang-btn" onclick="filterLanguage('TELUGU')">TELUGU</button>
+        </div>
+        <div class="movie-grid" id="movie-grid-container">
+            <!-- Dynamically generated movies -->
+        </div>
+    </main>
+
+    <!-- PAGE 2: PREMIUM SEATING & RESERVATION -->
+    <main id="booking-page" class="page-view">
+        <button class="back-btn" onclick="showCatalogPage()">← Back to Selection</button>
+        
+        <div class="booking-layout">
+            <!-- Left Side Seating Grid -->
+            <div>
+                <div class="screen-container">
+                    <div class="cinema-screen"></div>
+                    <div class="screen-label">Dolby Atmos Screen</div>
+                </div>
+                
+                <div class="seating-chart" id="seating-chart-container">
+                    <!-- 48 Seats structured dynamically -->
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color" style="background:#333;"></div>Available</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#dfb76c;"></div>Selected</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#1a1a1a;"></div>Occupied</div>
+                </div>
+            </div>
+
+            <!-- Right Side Interactive Sidebar -->
+            <aside class="summary-panel">
+                <h2>Reservation Details</h2>
+                <div class="summary-row">
+                    <span style="color:var(--text-muted)">Movie</span>
+                    <span id="summary-movie-title" style="font-weight:bold;">-</span>
+                </div>
+                <div class="summary-row">
+                    <span style="color:var(--text-muted)">Language</span>
